@@ -1,7 +1,9 @@
-import time
 import os
-import random
 import sys
+import random
+from random import randint
+import time
+import ast
 
 TERMINAL_SIZE = os.get_terminal_size()
 columns = TERMINAL_SIZE.columns
@@ -15,50 +17,47 @@ HANGMAN_TITLE = """██╗░░██╗░█████╗░███╗�
 ╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝░╚═════╝░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝
                     by David Hurtado"""
 
-HANGMAN_PICS = ['''
-  +---+
+SMALL_TITLE = """\n█░█ ▄▀█ █▄░█ █▀▀ █▀▄▀█ ▄▀█ █▄░█
+█▀█ █▀█ █░▀█ █▄█ █░▀░█ █▀█ █░▀█\n
+"""
+
+HANGMAN_PICS = ['''  +---+
   |   |
       |
       |
       |
       |
-=========''', '''
-  +---+
-  |   |
-  O   |
-      |
-      |
-      |
-=========''', '''
-  +---+
+=========''', '''  +---+
   |   |
   O   |
+      |
+      |
+      |
+=========''', '''  +---+
+  |   |
+  O   |
   |   |
       |
       |
-=========''', '''
-  +---+
+=========''', '''  +---+
   |   |
   O   |
  /|   |
       |
       |
-=========''', '''
-  +---+
+=========''', '''  +---+
   |   |
   O   |
  /|\  |
       |
       |
-=========''', '''
-  +---+
+=========''', '''  +---+
   |   |
   O   |
  /|\  |
  /    |
       |
-=========''', '''
-  +---+
+=========''', '''  +---+
   |   |
   O   |
  /|\  |
@@ -66,8 +65,40 @@ HANGMAN_PICS = ['''
       |
 =========''']
 
+alphabet = {
+    'a': '▄▀█\n█▀█',
+    'b': '█▄▄\n█▄█',
+    'c': '█▀▀\n█▄▄',
+    'd': '█▀▄\n█▄▀',
+    'e': '█▀▀\n██▄',
+    'f': '█▀▀\n█▀░',
+    'g': '█▀▀\n█▄█',
+    'h': '█░█\n█▀█',
+    'i': '░█░\n░█░',
+    'j': '░░█\n█▄█',
+    'k': '█▄▀\n█░█', 
+    'l': '█░░\n█▄▄',
+    'm': '█▀▄▀█\n█░▀░█',
+    'n': '█▄░█\n█░▀█',
+    'o': '█▀█\n█▄█',
+    'p': '█▀█\n█▀▀',
+    'q': '█▀█\n▀▀█',
+    'r': '█▀█\n█▀▄',
+    's': '█▀\n▄█',
+    't': '▀█▀\n░█░',
+    'u': '█░█\n█▄█',
+    'v': '█░█\n▀▄▀',
+    'w': '█░█░█\n▀▄▀▄▀',
+    'x': '▀▄▀\n█░█',
+    'y': '█▄█\n░█░',
+    'z': '▀█░\n█▄░'
+}
+
 # ------------- Colors:
 def color(color, string):
+    color_list = ['purple', 'cyan', 'blue', 'green', 'yellow', 'red']
+    if color == '':
+        color = random.choice(color_list)
     if color == 'purple':
         style = "\033[95m"
     elif color == 'cyan':
@@ -94,7 +125,6 @@ help_message = f"""{color('bold', "HANGMAN Game, created by David Hurtado")} {co
 {color('bold', "hangman -c")}: Will make some config changes.
 
 {color('bold', "hangman -p")}: Play an Hangman Game.
-{color('bold', "hangman -s")}: Show some user stats.
 
 {color('bold', "hangman -l")}: Show the word list.
 {color('bold', "hangman -a word")}: Add an word to the word list.
@@ -103,11 +133,17 @@ help_message = f"""{color('bold', "HANGMAN Game, created by David Hurtado")} {co
 
 
 # ------------- Working with files:
-def read_file(path):
-    pass
+def read_file():
+    with open('./data', 'r', encoding='utf-8') as f:
+        data = f.read()
+        res = ast.literal_eval(data)
+    return res
 
-def modify_file(path, value):
-    pass
+def modify_file(value, path1, path2):
+    new_file = read_file() #dictionary
+    new_file[path1][path2] = value
+    with open('./data', 'w', encoding='utf8') as f:
+        f.write(str(new_file))
 
 # ------------- Strings
 def normalize(s): # It removes the accents of a string
@@ -124,34 +160,45 @@ def normalize(s): # It removes the accents of a string
 
 # ------------- Config:
 def get_config(message, error_message, option1, option2, path):
-    setting = input(message)
-    while setting != option1 and setting != option2:
-        setting = input(error_message)
+    option1 = option1.lower()
+    option2 = option2.lower()
     
+    setting = input(message).lower()
+    while setting != option1 and setting != option2:
+        setting = input(error_message).lower()
+        
     if setting == option1:
-        modify_file(f"[user_info][{path}]", option1)
+        modify_file(option1, "user_info", path)
     elif setting == option2:
-        modify_file(f"[user_info][{path}]", option2)
+        modify_file(option2, "user_info", path)
 
 
 def config():
     print("Hangman Game Settings")
     get_config("Select an operative system (win10 or unix): ", f"Select {color('red', 'a valid')} operative system: (Write {color('bold', 'win10')} or {color('bold', 'unix')}): ", "win10", "unix", "operative_system")
-    
-    get_config("\nSelect a language for play (EN or ES): ", f"Select {color('red', 'a valid')} language: (Write {color('bold', 'EN')} or {color('bold', 'ES')}): ", "EN", "ES", "language")
-
+    get_config("Select a language for play (EN or ES): ", f"Select {color('red', 'a valid')} language: (Write {color('bold', 'EN')} or {color('bold', 'ES')}): ", "EN", "ES", "language")
     print(f"successful Finished Hangman settings, to modify the word list use {color('bold', 'hangman -l')}")
 
 
 # ------------- Play:
-def play():
-    while True:
-        updateScreen()
-        time.sleep(1)
-    
+def getWord(language):
+    language = language.lower()
+    file = read_file()
+    word_list = file["word_list"][language]
+    i = random.randint(0, len(word_list) - 1)
 
-def updateScreen():
-    os.system('clear')
+    word = word_list[i]
+    return word
+
+def play():
+    updateScreen(0)
+
+def updateScreen(hangman_state):
+    operative_system = read_file()['user_info']['operative_system']
+    if operative_system == 'win10':
+        os.system('cls')
+    elif operative_system == 'unix':
+        os.system('clear')
 
     line = ''
     i = 0
@@ -160,27 +207,59 @@ def updateScreen():
         i += 1
     print(line)
 
-    if columns < 65:
-        pass
+    if columns < 32:
+        title_size = 13
+        title = 'H A N G M A N'
+    elif columns < 65:
+        title_size = 31
+        title = SMALL_TITLE
     else:
-        row1_margin_value = (columns - 62) / 2
-        row1_margin = int(row1_margin_value) * " "
-        for line in HANGMAN_TITLE.splitlines():
-            print(row1_margin + line)
+        title_size = 62
+        title = HANGMAN_TITLE
 
+    row1_margin = int((columns - title_size) / 2) * " "
+    for line in title.splitlines():
+        print(row1_margin + line)
 
+    i = 0
+    word = getWord('EN')
+    row2_margin = int(columns - (9 + len(word) * 4) / 2) * " "
+    for line in HANGMAN_PICS[hangman_state].splitlines():
+        if i == 50:
+            print((row2_margin * 4) + line + row2_margin + ("--- " * len(word)))
+        else:
+            print((row2_margin * 4) + line)
+        i += 1
 
-def stats():
-    print("MOMENTO Stats")
 
 
 def list():
-    print("MOMENTO LIST")
+    pass
 
-def addWord(word):
-    print("SE AGREGO LA palabra", word)
+def add_word(word):
+    stringNormalized = normalize(word).lower().split()
+    stringNormalized = stringNormalized[0]
 
-def deleteWord(word):
+    if len(stringNormalized) <= 3:
+        return print(color('red', 'Error: ') + '"' + stringNormalized + '" is a very short word (min length 4 characters)')
+
+    if stringNormalized != word:
+        bold = 'bold'
+        response = input(f'Want add the word "{color(bold, stringNormalized)}"? (yes, no): ')
+        if response.lower() != 'yes':
+            return print("Word was not added")
+
+    language = input(f'Language: (en or es): ').lower()
+    while language != 'en' and language != 'es':
+        language = input(color('red', 'Select a valid language ') + '(' + color('bold', 'en') + ' or ' + color('bold', 'es') + '): ').lower()
+    
+    file = read_file()
+    old_word_list = file["word_list"][language]
+    new_word_list = old_word_list + [stringNormalized]
+    modify_file(new_word_list, 'word_list', language)
+    print('Word "' + color('bold', stringNormalized) + '" was added successfully to the "' + language + '" word list')
+
+def delete_word(word):
     print("SE ELIMINO LA palabra", word)
 
 
@@ -200,14 +279,15 @@ def read_args():
         return config()
     elif "-p" in arguments:
         return play()
-    elif "-s" in arguments:
-        return stats()
     elif "-l" in arguments:
         return list()
     elif "-a" in arguments:
-        return addWord(arguments[1])
+        if len(arguments) == 1:
+            print(color('red', 'Error: ') + 'Please enter a word. (hangman -a word)')
+        else:
+            return add_word(arguments[1])
     elif "-d" in arguments:
-        return deleteWord(arguments[1])
+        return delete_word(arguments[1])
 
 def run():
     read_args()

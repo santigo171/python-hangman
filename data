@@ -1,11 +1,1 @@
-{
-    "user_info": {
-        "operative_system": "",
-        "language": "",
-        "stats": "",
-    },
-    "word_list": {
-        "spanish": []
-        "english": []
-    }
-}
+{'user_info': {'operative_system': 'unix', 'language': 'en'}, 'word_list': {'es': ['velociraptor', 'sebastian', 'ganar', 'golpear', 'caramelos', 'espeso', 'esposo', 'ancho', 'lavanderia', 'babear', 'twitter'], 'en': ['crude', 'lawn', 'broadcaster', 'horizon', 'lamp', 'tooth', 'secret', 'meeting', 'antiquity', 'president', 'successfully', 'chicken', 'convince', 'architect', 'redeem', 'favorable', 'excavate', 'execution', 'embarrassment']}}
