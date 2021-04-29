@@ -1,13 +1,12 @@
-import os
-import sys
-import random
+import os #to clear screen
+import sys #to get arguments
+import ast # String to dic
+import random 
 from random import randint
-import time
-import ast
 
-TERMINAL_SIZE = os.get_terminal_size()
-columns = TERMINAL_SIZE.columns
-rows = TERMINAL_SIZE.lines
+# TERMINAL_SIZE = os.get_terminal_size()
+# columns = TERMINAL_SIZE.columns
+# rows = TERMINAL_SIZE.lines
 VERSION = "Beta 1.2"
 
 # ------------- Sprites:
@@ -19,8 +18,8 @@ HANGMAN_TITLE = """██╗░░██╗░█████╗░███╗�
 ╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝░╚═════╝░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝
                     by David Hurtado"""
 
-SMALL_TITLE = """\n█░█ ▄▀█ █▄░█ █▀▀ █▀▄▀█ ▄▀█ █▄░█
-█▀█ █▀█ █░▀█ █▄█ █░▀░█ █▀█ █░▀█\n
+SMALL_TITLE = """█░█ ▄▀█ █▄░█ █▀▀ █▀▄▀█ ▄▀█ █▄░█
+█▀█ █▀█ █░▀█ █▄█ █░▀░█ █▀█ █░▀█
 """
 
 HANGMAN_PICS = ['''  +---+
@@ -67,6 +66,7 @@ HANGMAN_PICS = ['''  +---+
       |
 =========''']
 
+
 alphabet = {
     'a': '▄▀█\n█▀█',
     'b': '█▄▄\n█▄█',
@@ -80,21 +80,22 @@ alphabet = {
     'j': '░░█\n█▄█',
     'k': '█▄▀\n█░█', 
     'l': '█░░\n█▄▄',
-    'm': '█▀▄▀█\n█░▀░█',
-    'n': '█▄░█\n█░▀█',
+    'm': '╔╗╗\n║║║',
+    'n': '▄▄▄\n█ █',
     'o': '█▀█\n█▄█',
     'p': '█▀█\n█▀▀',
     'q': '█▀█\n▀▀█',
     'r': '█▀█\n█▀▄',
-    's': '█▀\n▄█',
+    's': '█▀░\n▄█░',
     't': '▀█▀\n░█░',
     'u': '█░█\n█▄█',
     'v': '█░█\n▀▄▀',
-    'w': '█░█░█\n▀▄▀▄▀',
+    'w': '║║║\n╚╝╝',
     'x': '▀▄▀\n█░█',
     'y': '█▄█\n░█░',
     'z': '▀█░\n█▄░'
 }
+
 
 # ------------- Colors:
 def color(color, string):
@@ -127,16 +128,27 @@ Version: {VERSION}
 {color('bold', "hangman -h")}: Show the help message.
 {color('bold', "hangman -c")}: Will make some config changes.
 
-{color('bold', "hangman -l")}: Show the word list.
+{color('bold', "hangman -l language")}: Show the word list.
 {color('bold', "hangman -a language word")}: Add an word to the word list.
 {color('bold', "hangman -d language word")}: Delete an word from the word list."""
 
 # ------------- Working with files:
 def read_file():
-    with open('./data', 'r', encoding='utf-8') as f:
-        data = f.read()
-        res = ast.literal_eval(data)
-    return res
+    try:
+        with open('./data', 'r', encoding='utf-8') as f:
+            data = f.read()
+            res = ast.literal_eval(data)
+        return res
+    except (TypeError, NameError, SyntaxError, FileNotFoundError):
+        print(f"{color('red', 'Critical Error:')} Can't find the file named 'data', we are restoring the file, but please, don't modify or delete that file.")
+        new_file = "{'user_info': {'operative_system': 'unix', 'language': 'es'}, 'word_list': {'es': ['velociraptor', 'ganar', 'golpear', 'caramelos', 'espeso', 'esposo', 'ancho', 'lavanderia', 'babear', 'twitter', 'prisionera', 'indiferentemente', 'imaginar', 'reconocer', 'zodiaco', 'popular', 'sentado', 'seco', 'calcio', 'bomba', 'humano', 'grabador', 'pintura', 'cucaracha', 'abrazadera', 'espiral', 'embarazo', 'cueva', 'remolacha', 'satelite', 'bache', 'desenvolver', 'reprobar', 'dirigir', 'bateria', 'calzado', 'aplastar', 'moverse', 'murmurar', 'cancha', 'reina', 'claustrofobia', 'farmacia', 'ventana', 'estallido', 'terraza', 'desnudarse', 'retorcer', 'perfume', 'coleccion', 'torre', 'rata', 'vestuario', 'microondas', 'operacion', 'dichoso', 'aparatos', 'historiador', 'boleto', 'provincia', 'hormiga', 'flecha', 'lanzallamas', 'observatorio', 'ventilador', 'holanda'], 'en': ['crude', 'lawn', 'broadcaster', 'horizon', 'lamp', 'tooth', 'secret', 'meeting', 'antiquity', 'president', 'successfully', 'chicken', 'convince', 'architect', 'redeem', 'favorable', 'excavate', 'execution', 'embarrassment', 'queen', 'synchronous', 'limited', 'superintendent', 'expectation', 'defend', 'document', 'rational', 'weapon', 'respect', 'mastermind', 'generation', 'claim', 'aluminium', 'risk']}}"
+
+        file = open('./data', "w")
+        file.write(new_file)
+        file.close()
+        print("File restored!, please make an 'hangman -c' to configure again the game.")
+        quit()
+
 
 def modify_file(value, path1, path2):
     new_file = read_file() #dictionary
@@ -155,7 +167,7 @@ def normalize(s): # It removes the accents of a string
         ("ñ", "n"),
         ('"', "")
     ]
-    forbidden = ["_", "-", "|", "\\", "/", "+", "{", "}", "[", "]", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "‏", "@", "!", ",", ".", ";", ":", "#", "$", "%", "^", "&", "~", "`", "?", "'"]
+    forbidden = ["_", "-", "\\", "/", "+", "{", "}", "[", "]", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "‏", "@", "!", ",", ".", ";", ":", "#", "$", "%", "^", "&", "~", "`", "?", "'"]
 
     for letter in forbidden:
         tuple = (letter, '')
@@ -200,9 +212,20 @@ def getWord(language):
     return word
 
 def play():
-    updateScreen(0)
+    try:
+        language = read_file()['user_info']['language']
+        word = getWord(language)
+        hit_letters = [{'hit': True, 'letter': char} for char in word] # Provisional, no definitivo
+        # hit_letters = [{'hit': True, 'letter': word[0]}, {'hit': True, 'letter': word[1]}, {'hit': True, 'letter': word[2]}, {'hit': True, 'letter': word[3]}]
+        updateScreen(0, word, hit_letters, language)
+    except KeyboardInterrupt:
+        print('')
 
-def updateScreen(hangman_state):
+def updateScreen(hangman_state, word, hit_letters, language):
+    TERMINAL_SIZE = os.get_terminal_size()
+    columns = TERMINAL_SIZE.columns
+    rows = TERMINAL_SIZE.lines
+    print(color('bold', color('yellow', 'Warning: ') + 'You should make a "hangman -c" to set your operative system.'))
     operative_system = read_file()['user_info']['operative_system']
     if operative_system == 'win10':
         os.system('cls')
@@ -211,35 +234,70 @@ def updateScreen(hangman_state):
 
     line = ''
     i = 0
-    while i < TERMINAL_SIZE.columns:
+    while i < columns:
         line += '-'
         i += 1
     print(line)
 
     if columns < 32:
-        title_size = 13
         title = 'H A N G M A N'
+        word_size = 1
     elif columns < 65:
-        title_size = 31
         title = SMALL_TITLE
+        word_size = 1
     else:
-        title_size = 62
         title = HANGMAN_TITLE
+        word_size = 3
+
+    title_size = len(title.splitlines()[0])
 
     row1_margin = int((columns - title_size) / 2) * " "
     for line in title.splitlines():
         print(row1_margin + line)
 
     i = 0
-    word = getWord('EN')
-    row2_margin = int(columns - (9 + len(word) * 4) / 2) * " "
-    for line in HANGMAN_PICS[hangman_state].splitlines():
-        if i == 50:
-            print((row2_margin * 4) + line + row2_margin + ("--- " * len(word)))
-        else:
-            print((row2_margin * 4) + line)
-        i += 1
 
+    content_size = 9 + (len(word) * (word_size + 1)) + 5
+    row2_margin = int((columns -  content_size) / 2) * " "
+    
+    margin = "     "
+    row2_3 = margin[1:-1] + " "
+    row2_4 = margin[1:-1] + " "
+    row2_5 = margin + (len(word) * (word_size * "-" + " "))
+    
+    print("\n")
+
+    # print(word)
+    try:
+        for letter_dic in hit_letters:
+            if letter_dic["hit"]:
+                if columns < 65:
+                    row2_4 += " " + letter_dic["letter"].swapcase()
+                else:
+                    letter = letter_dic["letter"]
+                    row2_4 += " " + alphabet[letter].splitlines()[1]
+                    row2_3 += " " + alphabet[letter].splitlines()[0]
+            else:
+                if columns < 65:
+                    row2_4 += "  "
+                else:
+                    row2_4 += " " + "   "
+                    row2_3 += " " + "   "
+    except KeyError:
+        command = color('bold', 'hangman -d ' + language + " " + word)
+        return print(f"\n{color('red', 'Error: ')} the word: {color('bold', word)} from the {color('bold', language)} dictionary have invalid characters. Please make an {command} And then, if you want, add it again with only alphabet characters (A - Z) NOT NUMBERS OR SYMBOLS.")
+
+
+    for line in HANGMAN_PICS[hangman_state].splitlines():
+        if i == 3:
+            print(row2_margin + line + row2_3)
+        elif i == 4:
+            print(row2_margin + line + row2_4)
+        elif i == 5:
+            print(row2_margin + line + row2_5)
+        else:
+            print(row2_margin + line)
+        i += 1
 
 
 def list(language):
