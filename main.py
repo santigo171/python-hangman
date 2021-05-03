@@ -1,13 +1,24 @@
+""" Possible future features:
+
+hangman -l:
+    filter by:
+        alphabetical order
+        recently added
+hangman -p:
+    animations
+"""
+
 import os #to clear screen
 import sys #to get arguments
 import ast # String to dic
 import random 
 from random import randint
 
-# TERMINAL_SIZE = os.get_terminal_size()
-# columns = TERMINAL_SIZE.columns
-# rows = TERMINAL_SIZE.lines
-VERSION = "Beta 1.2"
+TERMINAL_SIZE = os.get_terminal_size()
+columns = TERMINAL_SIZE.columns
+rows = TERMINAL_SIZE.lines
+VERSION = "Beta 1.3"
+forbidden = ["_", "-", "\\", "/", "|", "+", "*", "{", "}", "[", "]", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "‏", "@", "!", ",", ".", ";", ":", "#", "$", "%", "^", "&", "~", "`", "?", "'"]
 
 # ------------- Sprites:
 HANGMAN_TITLE = """██╗░░██╗░█████╗░███╗░░██╗░██████╗░███╗░░░███╗░█████╗░███╗░░██╗
@@ -122,6 +133,7 @@ def color(color, string):
 
 help_message = f"""{color('bold', "HANGMAN Game, created by David Hurtado")} {color('blue', "@santigo171.")}
 Version: {VERSION}
+This is an open source project: https://github.com/santigo171/python-hangman
 
 {color('bold', "hangman -p")}: Play an Hangman Game.
 
@@ -140,12 +152,8 @@ def read_file():
             res = ast.literal_eval(data)
         return res
     except (TypeError, NameError, SyntaxError, FileNotFoundError):
-        print(f"{color('red', 'Critical Error:')} Can't find the file named 'data', we are restoring the file, but please, don't modify or delete that file.")
-        new_file = "{'user_info': {'operative_system': 'unix', 'language': 'es'}, 'word_list': {'es': ['velociraptor', 'ganar', 'golpear', 'caramelos', 'espeso', 'esposo', 'ancho', 'lavanderia', 'babear', 'twitter', 'prisionera', 'indiferentemente', 'imaginar', 'reconocer', 'zodiaco', 'popular', 'sentado', 'seco', 'calcio', 'bomba', 'humano', 'grabador', 'pintura', 'cucaracha', 'abrazadera', 'espiral', 'embarazo', 'cueva', 'remolacha', 'satelite', 'bache', 'desenvolver', 'reprobar', 'dirigir', 'bateria', 'calzado', 'aplastar', 'moverse', 'murmurar', 'cancha', 'reina', 'claustrofobia', 'farmacia', 'ventana', 'estallido', 'terraza', 'desnudarse', 'retorcer', 'perfume', 'coleccion', 'torre', 'rata', 'vestuario', 'microondas', 'operacion', 'dichoso', 'aparatos', 'historiador', 'boleto', 'provincia', 'hormiga', 'flecha', 'lanzallamas', 'observatorio', 'ventilador', 'holanda'], 'en': ['crude', 'lawn', 'broadcaster', 'horizon', 'lamp', 'tooth', 'secret', 'meeting', 'antiquity', 'president', 'successfully', 'chicken', 'convince', 'architect', 'redeem', 'favorable', 'excavate', 'execution', 'embarrassment', 'queen', 'synchronous', 'limited', 'superintendent', 'expectation', 'defend', 'document', 'rational', 'weapon', 'respect', 'mastermind', 'generation', 'claim', 'aluminium', 'risk']}}"
-
-        file = open('./data', "w")
-        file.write(new_file)
-        file.close()
+        print(f"{color('red', 'Critical Error:')} Can't find the file named 'data', we are restoring the file, but please, don't modify or delete that file...")
+        restore_file()
         print("File restored!, please make an 'hangman -c' to configure again the game.")
         quit()
 
@@ -155,6 +163,12 @@ def modify_file(value, path1, path2):
     new_file[path1][path2] = value
     with open('./data', 'w', encoding='utf8') as f:
         f.write(str(new_file))
+
+def restore_file():
+    new_file = "{'user_info': {'operative_system': 'unix', 'language': 'es'}, 'word_list': {'es': ['velociraptor', 'ganar', 'golpear', 'caramelos', 'espeso', 'esposo', 'ancho', 'lavanderia', 'babear', 'twitter', 'prisionera', 'indiferentemente', 'imaginar', 'reconocer', 'zodiaco', 'popular', 'sentado', 'seco', 'calcio', 'bomba', 'humano', 'grabador', 'pintura', 'cucaracha', 'abrazadera', 'espiral', 'embarazo', 'cueva', 'remolacha', 'satelite', 'bache', 'desenvolver', 'reprobar', 'dirigir', 'bateria', 'calzado', 'aplastar', 'moverse', 'murmurar', 'cancha', 'reina', 'claustrofobia', 'farmacia', 'ventana', 'estallido', 'terraza', 'desnudarse', 'retorcer', 'perfume', 'coleccion', 'torre', 'rata', 'vestuario', 'microondas', 'operacion', 'dichoso', 'aparatos', 'historiador', 'boleto', 'provincia', 'hormiga', 'flecha', 'lanzallamas', 'observatorio', 'ventilador', 'holanda'], 'en': ['crude', 'lawn', 'broadcaster', 'horizon', 'lamp', 'tooth', 'secret', 'meeting', 'antiquity', 'president', 'successfully', 'chicken', 'convince', 'architect', 'redeem', 'favorable', 'excavate', 'execution', 'embarrassment', 'queen', 'synchronous', 'limited', 'superintendent', 'expectation', 'defend', 'document', 'rational', 'weapon', 'respect', 'mastermind', 'generation', 'claim', 'aluminium', 'risk']}}"
+    file = open('./data', "w")
+    file.write(new_file)
+    file.close()
 
 # ------------- Strings
 def normalize(s): # It removes the accents of a string
@@ -167,7 +181,6 @@ def normalize(s): # It removes the accents of a string
         ("ñ", "n"),
         ('"', "")
     ]
-    forbidden = ["_", "-", "\\", "/", "+", "{", "}", "[", "]", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "‏", "@", "!", ",", ".", ";", ":", "#", "$", "%", "^", "&", "~", "`", "?", "'"]
 
     for letter in forbidden:
         tuple = (letter, '')
@@ -210,21 +223,60 @@ def getWord(language):
 
     word = word_list[i]
     return word
+    # return 'superintendent'
 
 def play():
-    try:
-        language = read_file()['user_info']['language']
-        word = getWord(language)
-        hit_letters = [{'hit': True, 'letter': char} for char in word] # Provisional, no definitivo
-        # hit_letters = [{'hit': True, 'letter': word[0]}, {'hit': True, 'letter': word[1]}, {'hit': True, 'letter': word[2]}, {'hit': True, 'letter': word[3]}]
-        updateScreen(0, word, hit_letters, language)
-    except KeyboardInterrupt:
-        print('')
+    # Default:
+    language = read_file()['user_info']['language']
+    word = getWord(language)
+    
+    hit_letters = [{'hit': False, 'letter': char} for char in word]
+    user_input_list = []
+    hangman_state = 0
+    won = False
+    error = ''
 
-def updateScreen(hangman_state, word, hit_letters, language):
-    TERMINAL_SIZE = os.get_terminal_size()
-    columns = TERMINAL_SIZE.columns
-    rows = TERMINAL_SIZE.lines
+    updateScreen(hangman_state, word, hit_letters, language, error)
+
+    while hangman_state < 8 or won == False:    
+        invalid_input = True
+        while invalid_input:
+            forbidden_character = False
+            print(word)
+            user_input = input("Guess: ")
+            user_input = user_input.lower()
+
+            for letter in forbidden:
+                if user_input == letter:
+                    forbidden_character = True
+            
+            # for letter in user_input_list:
+                # if user_input == letter:
+            if len(user_input) > 1:
+                error = "Please enter only ONE letter"
+            elif len(user_input) == 0:
+                error = "Please enter a letter"
+            elif forbidden_character:
+                error = f"'{user_input}' is not a valid letter."
+            else:
+                invalid_input = False
+
+        i = 0
+        add_hangman_status = True
+
+        for dic in hit_letters:
+            i+= 1
+            if dic["letter"] == user_input:
+                dic["hit"] = True
+                add_hangman_status = False
+            else:
+                if len(hit_letters) == i and add_hangman_status:
+                    hangman_state += 1
+        updateScreen(hangman_state, word, hit_letters, language, '')
+
+
+def updateScreen(hangman_state, word, hit_letters, language, error):
+    # Clean screen and warn about the OS
     print(color('bold', color('yellow', 'Warning: ') + 'You should make a "hangman -c" to set your operative system.'))
     operative_system = read_file()['user_info']['operative_system']
     if operative_system == 'win10':
@@ -232,6 +284,7 @@ def updateScreen(hangman_state, word, hit_letters, language):
     elif operative_system == 'unix':
         os.system('clear')
 
+    # BIG PRO LINE 😎
     line = ''
     i = 0
     while i < columns:
@@ -239,10 +292,11 @@ def updateScreen(hangman_state, word, hit_letters, language):
         i += 1
     print(line)
 
+    # BIG "or small" pro title
     if columns < 32:
         title = 'H A N G M A N'
         word_size = 1
-    elif columns < 65:
+    elif columns < 68:
         title = SMALL_TITLE
         word_size = 1
     else:
@@ -256,7 +310,7 @@ def updateScreen(hangman_state, word, hit_letters, language):
         print(row1_margin + line)
 
     i = 0
-
+    # calc margins and lines
     content_size = 9 + (len(word) * (word_size + 1)) + 5
     row2_margin = int((columns -  content_size) / 2) * " "
     
@@ -267,18 +321,19 @@ def updateScreen(hangman_state, word, hit_letters, language):
     
     print("\n")
 
-    # print(word)
+    # Put into each line the letters of the word:
     try:
         for letter_dic in hit_letters:
-            if letter_dic["hit"]:
-                if columns < 65:
+            if letter_dic["hit"]: # THE PLAYER SAID THE LETTER!!!!
+                if columns < 68:    # Small letters
                     row2_4 += " " + letter_dic["letter"].swapcase()
-                else:
+                else:               # BIG LETTER BOI LETS GOOOOOO
                     letter = letter_dic["letter"]
                     row2_4 += " " + alphabet[letter].splitlines()[1]
                     row2_3 += " " + alphabet[letter].splitlines()[0]
-            else:
-                if columns < 65:
+
+            else:                 # THE PLAYER DIDN'T SAID THE LETTER :(
+                if columns < 68:
                     row2_4 += "  "
                 else:
                     row2_4 += " " + "   "
@@ -287,17 +342,18 @@ def updateScreen(hangman_state, word, hit_letters, language):
         command = color('bold', 'hangman -d ' + language + " " + word)
         return print(f"\n{color('red', 'Error: ')} the word: {color('bold', word)} from the {color('bold', language)} dictionary have invalid characters. Please make an {command} And then, if you want, add it again with only alphabet characters (A - Z) NOT NUMBERS OR SYMBOLS.")
 
-
-    for line in HANGMAN_PICS[hangman_state].splitlines():
+    # print all lets gooooooooo
+    for pic in HANGMAN_PICS[hangman_state].splitlines():
         if i == 3:
-            print(row2_margin + line + row2_3)
+            print(row2_margin + pic + row2_3)
         elif i == 4:
-            print(row2_margin + line + row2_4)
+            print(row2_margin + pic + row2_4)
         elif i == 5:
-            print(row2_margin + line + row2_5)
+            print(row2_margin + pic + row2_5)
         else:
-            print(row2_margin + line)
+            print(row2_margin + pic)
         i += 1
+    print(error)
 
 
 def list(language):
@@ -316,74 +372,71 @@ def list(language):
     for word in word_list:
         print(f"{word_list.index(word) + 1}. {word}")
 
-def add_word(language, word):
+def add_word(language, array_word):
     try:
-        stringNormalized = normalize(word).lower().split()
-        stringNormalized = stringNormalized[0]
-        language = language.lower()
-
-        if language == 'spanish' or language == 'español':
-            print("At the next time write 'es' instead of " + language)
-            language = 'es'
+        normalized_array_word = []
+        for word in array_word:
+            stringNormalized = normalize(word).lower()
+            normalized_array_word.append(stringNormalized)
         
-        if language == 'english':
-            print("At the next time you can write 'en', not " + language)
-            language = 'en'
-
-        if len(stringNormalized) <= 3:
-            return print(color('red', 'Error: ') + '"' + stringNormalized + '" is a very short word (min length 4 characters)')
-
-        if stringNormalized != word:
-            bold = 'bold'
-            response = input(f'Want add the word "{color(bold, stringNormalized)}"? (yes, no): ')
-            if response.lower() != 'yes':
-                return print("Word was not added")
-
+        language = language.lower()
         while language != 'en' and language != 'es':
             language = input("Please enter a valid language (en or es): ")
-        
+
         file = read_file()
         old_word_list = file["word_list"][language]
-        
-        for word in old_word_list:
-            if word == stringNormalized:
-                return print(color('red', "Error: ") + word + " is already in the list. Word was not added.")
 
-        new_word_list = old_word_list + [stringNormalized]
+        for old_word in old_word_list:
+            for word in normalized_array_word:
+                if word == old_word:
+                    print(color('red', "Error: ") + word + " is already in the list. Word was not added.")
+                    normalized_array_word.remove(word)
+
+                if len(word) <= 3 or len(word) > 14:
+                    print(color('red', 'Error: ') + '"' + word + '" is a very short or a very long word (min 4 characters, max 14 characters)')
+                    normalized_array_word.remove(word)
+
+        if array_word != normalized_array_word:
+            word_list = ''
+            for word in normalized_array_word:
+                word_list += " " + word
+
+            print("\nWant add the following words?" + word_list)
+            response = input("(yes, no): ")
+            if response.lower() != 'yes' and response.lower() != 'y':
+                return print("Words were not added")
+
+        new_word_list = old_word_list + normalized_array_word
+
         modify_file(new_word_list, 'word_list', language)
-        print('"' + color('bold', stringNormalized) + '" was added successfully to the "' + language + '" word list')
+        print(f"{color('bold', word_list)} were added successfully to the {language} word list")
+        
     except KeyboardInterrupt:
-        print("\nWord was not added")
+        print("\nWord was not added, Keyboard Interrupt.")
 
 def delete_word(language, word):
+    stringNormalized = normalize(word).lower().split()
+    stringNormalized = stringNormalized[0]
+    language = language.lower()
+
+    while language != 'en' and language != 'es':
+        language = input("Please enter a valid language (en or es): ")
+    
+    file = read_file()
+    word_list = file["word_list"][language]
     try:
-        stringNormalized = normalize(word).lower().split()
-        stringNormalized = stringNormalized[0]
-        language = language.lower()
+        word_list.remove(stringNormalized) 
+    except ValueError:
+        return print(color("red", "Error: ") + stringNormalized + " isn't in the '" + language + "' word list.")
 
-        while language != 'en' and language != 'es':
-            language = input("Please enter a valid language (en or es): ")
-        
-        file = read_file()
-        word_list = file["word_list"][language]
-        try:
-            word_list.remove(stringNormalized) 
-        except ValueError:
-            return print(color("red", "Error: ") + stringNormalized + " isn't in the '" + language + "' word list.")
-
-        modify_file(word_list, 'word_list', language)
-        print('Word "' + color('bold', stringNormalized) + '" was successfully deleted from the "' + language + '" word list')
-    except KeyboardInterrupt:
-        print("\nWord was not deleted.")
+    modify_file(word_list, 'word_list', language)
+    print('Word "' + color('bold', stringNormalized) + '" was successfully deleted from the "' + language + '" word list')
 
 
 # ------------- Program:
 def read_args():
     arguments = sys.argv
     arguments.pop(0)
-
-    if len(arguments) > 3:
-        return print(f"{color('red', 'Error: So many arguments used.')} We recommend using use {color('bold', 'hangman -h')}")
 
     if arguments == []:
         return print(help_message)
@@ -395,6 +448,19 @@ def read_args():
         return config()
 
     elif "-p" in arguments:
+        file = read_file()
+
+        if len(file["word_list"]["es"]) <= 1 or len(file["word_list"]["en"]) <= 1:
+            print(color('red', 'Error: '), 'There are not enough words to play.')
+
+            answer = input('Want restore the word list with the default words? (y/n): ')
+
+            if answer == 'yes' or answer == 'y':
+                restore_file()
+                print("Default words added! Use 'hangman -p' to play")
+            else:
+                print("Ok, the word list wasn't restored. But please, add your custom words with 'hangman -a'")
+            return
         return play()
 
     elif "-l" in arguments:
@@ -405,9 +471,12 @@ def read_args():
 
     elif "-a" in arguments:
         if len(arguments) <= 2:
-            print(color('red', 'Error: ') + 'Please enter a language and a word. (hangman -a language word)')
+            print(color('red', 'Error: ') + 'Please enter a language and a word. (hangman -a language word word2 word3) (You can add has many words has you want after the language).')
         else:
-            return add_word(arguments[1], arguments[2])
+            language = arguments[1]
+            arguments.pop(0)
+            arguments.pop(0)
+            return add_word(language, arguments)
 
     elif "-d" in arguments:
         if len(arguments) <= 2:
@@ -419,7 +488,10 @@ def read_args():
         return print(color('red', 'Error') + ", can't find the argument " + str(arguments[0]) + f", We recommend using use {color('bold', 'hangman -h')}")
 
 def run():
-    read_args()
+    try:
+        read_args()
+    except KeyboardInterrupt:
+        print('\nKeyboard Interrupt')
 
 if __name__ == '__main__':
     run()
