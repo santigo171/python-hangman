@@ -188,7 +188,7 @@ def read_file():
             res = ast.literal_eval(data)
         return res
     except (TypeError, NameError, SyntaxError, FileNotFoundError):
-        print(f"{color('red', 'Critical Error:')} Can't find the file named 'data', we are restoring the file, but please, don't modify or delete that file...")
+        print(f"{color('red', 'Error:')} Can't find the file named 'data', we are restoring the file, but please, don't modify or delete that file...")
         restore_file()
         print("File restored!, please make an 'hangman -c' to configure again the game.")
         quit()
